@@ -6,48 +6,90 @@ import styles from "../styles/Home.module.css";
 
 const Home: NextPage = () => {
   const [info, setInfo] = useState("Hello");
+  const [repoId, setrepoId] = useState(0);
   const [userInfo, setUserInfo] = useState("");
   const [userTimeInfo, setUserTimeInfo] = useState<any>("0:00:00");
-  const hello = () => {
-    if (info == "Hello") {
-      setInfo("HelloWorld2");
-    } else {
-      setInfo("Hello");
-    }
-  };
 
   const getUserInfo = async () => {
-    // const ur = await (
-    //   await fetch("https://api.github.com/repos/Tomosuke0930/Yo/pulls/3")
-    // ).json();
-    // console.log(ur);
-    // Get the all user's repository info
-
     const urs = await (
       await fetch("https://api.github.com/users/Tomosuke0930/repos")
     ).json();
-
-    console.log(urs);
-
     // Get the all user's repository names
     const nameLists: string[] = new Array();
+    // const timeLists: any[] = new Array();
     const langLists: string[] = new Array();
+
     for (let i = 0; i < urs.length; i++) {
       nameLists.push(urs[i].name);
+      // timeLists.push(urs[i].created_at);
     }
-
     for (let i = 0; i < nameLists.length; i++) {
-      // console.log("Moving Me!!!");
       const lang = await (
         await fetch(
           `https://api.github.com/repos/Tomosuke0930/${nameLists[i]}/languages`
         )
       ).json();
-      // console.log(lang);
       langLists.push(lang);
     }
-    console.log(langLists);
+    // console.log(langLists);
+    // const getInfo: number = langLists.findIndex((item: any) => item.Solidity);
+
+    // langListsに含まれている中からSolidityがあるIndexだけを取得する
+    // この中に言語の条件があったindexが含まれている
+    const resultIndex = langLists.flatMap((item: any, i) =>
+      item.Solidity ? i : []
+    );
+
+    // タスク ResultIndexにおける時間を全て取得する
+
+    const langTimesLists: any[] = new Array();
+
+    // console.log("resultIndex.length", resultIndex.length);
+
+    for (let i = 0; i < urs.length; i++) {
+      if (resultIndex.includes(i)) {
+        langTimesLists.push(new Date(urs[i].created_at));
+      }
+    }
+
+    // console.log("langTimesLists", langTimesLists);
+
+    // const oneday = new Date("2022-01-23T08:52:34Z");
+    // console.log("oneday ===", oneday);
+
+    // タスク　その中からいちばん若いやつのindexを取得する
+    // そのindexがresultIndexにおけるindex番号と同じ
+
+    // console.log("langTimesLists ===", langTimesLists);
+    let oldestDay = langTimesLists[0];
+    let oldestDayIndex = 0;
+    for (let i = 0; i < langTimesLists.length; i++) {
+      if (oldestDay > langTimesLists[i]) {
+        // oldestDay = langTimesLists[i];
+        oldestDayIndex = i;
+      }
+    }
+
+    console.log("oldestDay ==", oldestDay);
+    console.log("oldestDayIndex ==", oldestDayIndex);
+    const oldestRepo = urs[oldestDayIndex].name;
+    console.log(oldestRepo);
+    // --------------------
+
+    // タスク そのrepoにおける全てのpullを見る
+
+    // タスク そのpullの中でpullが一番若いやつを見つけてそれの時間を取得する
+    // タスク　その時間と今を比較する
+
+    // console.log("The oldest repo using Soldity is ===", nameLists[getInfo]);
+    // console.log(timeLists);
+    // ここでfilterで言語を指定！その中でも最もidが早い？
+    // items.filter( function( value, index, array ) {
+    // })
+    // const specificLang = langLists.includes("Solidity");
   };
+
+  // repoIdが0じゃない && repoの言語に含まれている
 
   return (
     <div className={styles.container}>
