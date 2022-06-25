@@ -70,23 +70,49 @@ const Home: NextPage = () => {
       }
     }
 
-    console.log("oldestDay ==", oldestDay);
-    console.log("oldestDayIndex ==", oldestDayIndex);
+    // console.log("oldestDay ==", oldestDay);
+    // console.log("oldestDayIndex ==", oldestDayIndex);
     const oldestRepo = urs[oldestDayIndex].name;
-    console.log(oldestRepo);
+    // console.log(oldestRepo);
     // --------------------
 
     // タスク そのrepoにおける全てのpullを見る
-
+    /// https://api.github.com/repos/Tomosuke0930/Yo/pulls/3
+    /// https://api.github.com/repos/Tomosuke0930/Yo/pulls?state=all
+    const oldestRepoInfo = await (
+      await fetch(
+        `https://api.github.com/repos/Tomosuke0930/${oldestRepo}/pulls?state=all`
+      )
+    ).json();
+    // console.log("oldestRepoInfo ===", oldestRepoInfo);
+    // ちなみに後の方が若いやつなんだね
     // タスク そのpullの中でpullが一番若いやつを見つけてそれの時間を取得する
-    // タスク　その時間と今を比較する
+    /// 最初に見つけたらOK
 
-    // console.log("The oldest repo using Soldity is ===", nameLists[getInfo]);
-    // console.log(timeLists);
-    // ここでfilterで言語を指定！その中でも最もidが早い？
-    // items.filter( function( value, index, array ) {
-    // })
-    // const specificLang = langLists.includes("Solidity");
+    let oldestTime;
+    for (let i = oldestRepoInfo.length - 1; i >= 0; i--) {
+      if (oldestRepoInfo[i].head.repo.language == "Solidity") {
+        oldestTime = oldestRepoInfo[i].created_at;
+        // console.log("Index is ===", i);
+        break;
+      }
+    }
+
+    // console.log("oldestTime  Type===", typeof oldestTime);
+
+    // タスク　その時間と今を比較する
+    const formatDate = (date: Date): string => {
+      const y: number = date.getFullYear();
+      const m: string = ("00" + (date.getMonth() + 1)).slice(-2);
+      const d: string = ("00" + date.getDate()).slice(-2);
+      return `${y + "-" + m + "-" + d}`;
+    };
+    const nowDate: Date = new Date(formatDate(new Date()));
+    const setDate: Date = new Date(oldestTime);
+    const diffDay: number = Math.floor(
+      (nowDate.getTime() - setDate.getTime()) / 86400000
+    );
+    console.log("diffDay ===", diffDay);
   };
 
   // repoIdが0じゃない && repoの言語に含まれている
