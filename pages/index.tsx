@@ -4,10 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
 
+// 一旦綺麗にしよう
 const Home: NextPage = () => {
-  const [info, setInfo] = useState("Hello");
-  const [repoId, setrepoId] = useState(0);
-  const [userInfo, setUserInfo] = useState("");
   const [userTimeInfo, setUserTimeInfo] = useState<any>("0:00:00");
 
   const getUserInfo = async () => {
@@ -113,6 +111,7 @@ const Home: NextPage = () => {
       (nowDate.getTime() - setDate.getTime()) / 86400000
     );
     console.log("diffDay ===", diffDay);
+    setUserTimeInfo(diffDay);
   };
 
   // repoIdが0じゃない && repoの言語に含まれている
@@ -132,8 +131,8 @@ const Home: NextPage = () => {
 
         <h1>This is User Info</h1>
         <button onClick={getUserInfo}>Button</button>
-        <h2>Language is {userInfo}</h2>
-        <h2>Time is {userTimeInfo}</h2>
+        <h2>Solidity</h2>
+        <h2>Your Experienced Day is {userTimeInfo}</h2>
       </main>
 
       <footer className={styles.footer}>
