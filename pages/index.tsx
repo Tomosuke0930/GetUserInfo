@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
 
-// 一旦綺麗にしよう
 const Home: NextPage = () => {
   const [userTimeInfo, setUserTimeInfo] = useState<any>("0:00:00");
 
@@ -44,6 +43,8 @@ const Home: NextPage = () => {
     }
     // [Problem]
     // It is not true the most oldest repo has the oldest push in the target language
+
+    // Setting the oldest day of creating repo
     let oldestDay = langTimesLists[0];
     let oldestDayIndex = 0;
     for (let i = 0; i < langTimesLists.length; i++) {
@@ -51,13 +52,16 @@ const Home: NextPage = () => {
         oldestDayIndex = i;
       }
     }
-    const oldestRepo = allRepoInfo[oldestDayIndex].name;
+
+    // Setting oldest repository name to get its pull information
+    const oldestRepoName = allRepoInfo[oldestDayIndex].name;
     const oldestRepoInfo = await (
       await fetch(
-        `https://api.github.com/repos/Tomosuke0930/${oldestRepo}/pulls?state=all`
+        `https://api.github.com/repos/Tomosuke0930/${oldestRepoName}/pulls?state=all`
       )
     ).json();
 
+    // Getting the most oldest push on target language
     let oldestTime;
     for (let i = oldestRepoInfo.length - 1; i >= 0; i--) {
       if (oldestRepoInfo[i].head.repo.language == "Solidity") {
@@ -73,12 +77,13 @@ const Home: NextPage = () => {
       return `${y + "-" + m + "-" + d}`;
     };
 
-    const nowDate: Date = new Date(formatDate(new Date()));
-    const setDate: Date = new Date(oldestTime);
+    const nowDate: Date = new Date(formatDate(new Date())); // Today
+    const setDate: Date = new Date(oldestTime); // Your oldest push time
+    // Caluculating your experience (unit: Day)
     const diffDay: number = Math.floor(
       (nowDate.getTime() - setDate.getTime()) / 86400000
     );
-    console.log("diffDay ===", diffDay);
+
     setUserTimeInfo(diffDay);
   };
 
