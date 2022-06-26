@@ -9,102 +9,70 @@ const Home: NextPage = () => {
   const [userTimeInfo, setUserTimeInfo] = useState<any>("0:00:00");
 
   const getUserInfo = async () => {
-    const urs = await (
+    // Get the all repositories info
+    const allRepoInfo = await (
       await fetch("https://api.github.com/users/Tomosuke0930/repos")
     ).json();
-    // Get the all user's repository names
-    const nameLists: string[] = new Array();
-    // const timeLists: any[] = new Array();
-    const langLists: string[] = new Array();
 
-    for (let i = 0; i < urs.length; i++) {
-      nameLists.push(urs[i].name);
-      // timeLists.push(urs[i].created_at);
+    // Get the all repositories' name
+    const repoNameLists: string[] = new Array();
+    for (let i = 0; i < allRepoInfo.length; i++) {
+      repoNameLists.push(allRepoInfo[i].name);
     }
-    for (let i = 0; i < nameLists.length; i++) {
+
+    // Get the all repositories' programming language
+    const langLists: string[] = new Array();
+    for (let i = 0; i < repoNameLists.length; i++) {
       const lang = await (
         await fetch(
-          `https://api.github.com/repos/Tomosuke0930/${nameLists[i]}/languages`
+          `https://api.github.com/repos/Tomosuke0930/${repoNameLists[i]}/languages`
         )
       ).json();
       langLists.push(lang);
     }
-    // console.log(langLists);
-    // const getInfo: number = langLists.findIndex((item: any) => item.Solidity);
-
-    // langListsに含まれている中からSolidityがあるIndexだけを取得する
-    // この中に言語の条件があったindexが含まれている
+    // Get the repositry index number has solidity lang
     const resultIndex = langLists.flatMap((item: any, i) =>
       item.Solidity ? i : []
     );
 
-    // タスク ResultIndexにおける時間を全て取得する
-
+    // Get the all repo's time
     const langTimesLists: any[] = new Array();
-
-    // console.log("resultIndex.length", resultIndex.length);
-
-    for (let i = 0; i < urs.length; i++) {
+    for (let i = 0; i < allRepoInfo.length; i++) {
       if (resultIndex.includes(i)) {
-        langTimesLists.push(new Date(urs[i].created_at));
+        langTimesLists.push(new Date(allRepoInfo[i].created_at));
       }
     }
-
-    // console.log("langTimesLists", langTimesLists);
-
-    // const oneday = new Date("2022-01-23T08:52:34Z");
-    // console.log("oneday ===", oneday);
-
-    // タスク　その中からいちばん若いやつのindexを取得する
-    // そのindexがresultIndexにおけるindex番号と同じ
-
-    // console.log("langTimesLists ===", langTimesLists);
+    // [Problem]
+    // It is not true the most oldest repo has the oldest push in the target language
     let oldestDay = langTimesLists[0];
     let oldestDayIndex = 0;
     for (let i = 0; i < langTimesLists.length; i++) {
       if (oldestDay > langTimesLists[i]) {
-        // oldestDay = langTimesLists[i];
         oldestDayIndex = i;
       }
     }
-
-    // console.log("oldestDay ==", oldestDay);
-    // console.log("oldestDayIndex ==", oldestDayIndex);
-    const oldestRepo = urs[oldestDayIndex].name;
-    // console.log(oldestRepo);
-    // --------------------
-
-    // タスク そのrepoにおける全てのpullを見る
-    /// https://api.github.com/repos/Tomosuke0930/Yo/pulls/3
-    /// https://api.github.com/repos/Tomosuke0930/Yo/pulls?state=all
+    const oldestRepo = allRepoInfo[oldestDayIndex].name;
     const oldestRepoInfo = await (
       await fetch(
         `https://api.github.com/repos/Tomosuke0930/${oldestRepo}/pulls?state=all`
       )
     ).json();
-    // console.log("oldestRepoInfo ===", oldestRepoInfo);
-    // ちなみに後の方が若いやつなんだね
-    // タスク そのpullの中でpullが一番若いやつを見つけてそれの時間を取得する
-    /// 最初に見つけたらOK
 
     let oldestTime;
     for (let i = oldestRepoInfo.length - 1; i >= 0; i--) {
       if (oldestRepoInfo[i].head.repo.language == "Solidity") {
         oldestTime = oldestRepoInfo[i].created_at;
-        // console.log("Index is ===", i);
         break;
       }
     }
 
-    // console.log("oldestTime  Type===", typeof oldestTime);
-
-    // タスク　その時間と今を比較する
     const formatDate = (date: Date): string => {
       const y: number = date.getFullYear();
       const m: string = ("00" + (date.getMonth() + 1)).slice(-2);
       const d: string = ("00" + date.getDate()).slice(-2);
       return `${y + "-" + m + "-" + d}`;
     };
+
     const nowDate: Date = new Date(formatDate(new Date()));
     const setDate: Date = new Date(oldestTime);
     const diffDay: number = Math.floor(
@@ -113,8 +81,6 @@ const Home: NextPage = () => {
     console.log("diffDay ===", diffDay);
     setUserTimeInfo(diffDay);
   };
-
-  // repoIdが0じゃない && repoの言語に含まれている
 
   return (
     <div className={styles.container}>
